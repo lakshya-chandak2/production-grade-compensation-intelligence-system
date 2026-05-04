@@ -1,0 +1,277 @@
+🚀 3-DAY TRIAL: BUILD A PRODUCTION-GRADE COMPENSATION INTELLIGENCE SYSTEM (LEVELS.FYI FOR INDIA → GLOBAL)
+
+🎯 CONTEXT (READ FIRST)
+You are building a production-grade compensation intelligence system inspired by:
+https://www.levels.fyi/ (PRIMARY)
+https://6figr.com/
+https://www.ambitionbox.com/
+https://www.glassdoor.co.in/
+https://www.indiatechsalaries.com/
+
+🧠 WHAT YOU MUST UNDERSTAND (VERY IMPORTANT)
+Before building anything, you must understand:
+👉 What is “LEVEL” (Core Concept)
+Levels are standardized job bands:
+L3 / L4 / L5
+SDE1 / SDE2 / Senior Engineer
+Why this matters:
+Same role ≠ same pay
+Compensation is tied to level, not title
+👉 This is why https://www.levels.fyi/ wins
+👉 This is where https://www.ambitionbox.com/ and https://www.glassdoor.co.in/ fail
+
+🧠 PRODUCT PRINCIPLE
+“Structured data → Comparable → Decision-ready”
+You are NOT building:
+❌ a salary listing site
+You ARE building:
+✅ a compensation intelligence system
+
+🧠 PHASE 1: REVERSE ENGINEERING (MANDATORY)
+1. Analyze Core Products
+Go through:
+https://www.levels.fyi/
+https://6figr.com/
+https://www.ambitionbox.com/
+https://www.glassdoor.co.in/
+https://www.indiatechsalaries.com/
+
+Break Down These Flows:
+1. Salary Listing Page
+What columns exist?
+What filters exist?
+What is missing?
+2. Company Page
+What insights are shown?
+Is level used?
+3. Salary Submission Flow
+What inputs are taken?
+Structured or unstructured?
+4. Comparison (if exists)
+
+👉 OUTPUT (MANDATORY)
+Write:
+Observations
+Key differences
+What is good / bad
+❌ DO NOT submit screenshots
+✅ Write structured insights
+
+2. Feature Mapping Sheet
+Create a Google Sheet:
+Feature
+Levels.fyi
+6figr
+AmbitionBox
+Glassdoor
+Build?
+
+👉 Rules:
+Be opinionated
+Only mark YES for features you will build
+Focus on core system, not fluff
+
+🧪 10-20% CREATIVE SPACE
+You are allowed to:
+Improve filtering UX
+Add small clarity improvements
+Simplify flows
+You are NOT allowed to:
+Add new product categories
+Build unrelated features
+
+🛠️ PHASE 2: BUILD (3 DAYS)
+🎯 Mission
+Build the core compensation engine:
+Structured → Queryable → Comparable → Decision-ready
+
+🧱 WHAT YOU WILL BUILD
+
+1. DATABASE
+Use:
+PostgreSQL
+Prisma (preferred)
+
+Table: Salary
+id
+company (normalized string)
+role
+level (STANDARDIZED: L3/L4/L5)
+location
+experience_years
+base_salary
+bonus
+stock
+total_compensation
+confidence_score (from AI)
+created_at
+
+Rules:
+total_compensation = base + bonus + stock
+bonus/stock default = 0 if missing
+company must be normalized:
+lowercase
+trimmed
+
+2. BACKEND APIs
+
+POST /ingest-salary
+Input: JSON from AI team
+Responsibilities:
+Validate schema (MANDATORY)
+Reject invalid data
+Normalize company name
+Compute total compensation
+Store in DB
+
+GET /salaries (MOST IMPORTANT)
+Query params:
+company
+role
+level
+location
+Response:
+List of salaries
+Must support:
+Filtering (server-side)
+Sorting (by total_compensation)
+
+GET /company/:company
+Return:
+All salaries for company
+Median total compensation
+Level distribution
+
+(ADVANCED FEATURE - REQUIRED)
+GET /compare
+Input:
+salaryId1
+salaryId2
+Output:
+base
+bonus
+stock
+total
+level difference
+
+3. FRONTEND
+Use:
+React / Next.js
+Tailwind
+
+PAGE 1: Salary Table (CORE PAGE)
+Columns:
+Company
+Role
+Level
+Location
+Experience
+Total Compensation
+Features:
+Filters:
+company
+role
+level
+location
+Table rendering from API
+Empty states
+
+PAGE 2: Company Page
+Show:
+Salary list
+Median compensation
+Level distribution
+
+PAGE 3: Compare Page
+Select 2 salaries
+Show comparison
+
+⚠️ EDGE CASES (MANDATORY)
+You MUST handle:
+Missing bonus/stock → treat as 0
+Duplicate entries
+Company name variations:
+"Google", "google ", "GOOGLE"
+Invalid numbers → reject
+
+🔄 INTEGRATION CONTRACT (IMPORTANT)
+You will receive:
+{
+company,
+role,
+level_standardized,
+base_salary,
+bonus,
+stock,
+confidence
+}
+You MUST:
+Revalidate everything
+Never trust AI blindly
+
+🚫 DO NOT BUILD
+Auth
+Reviews
+Chat
+Fancy UI
+AI features
+
+📦 OUTPUT REQUIRED
+Live URL of the product 
+Live backend 
+Live frontend 
+GitHub repo
+Working APIs
+
+🧠 PRIORITY ORDER
+DB + Schema
+POST /ingest-salary
+GET /salaries
+Table UI
+Company page
+Compare feature
+
+🔥 SUCCESS =
+Clean structured data
+Strong level system
+Working filters
+Accurate compensation
+Simple but powerful UX
+
+🚨 FINAL NOTE
+Most platforms fail because:
+No structured levels
+No comparability
+Your job is to fix that.
+👉 Build like Levels.fyi
+👉 Avoid becoming AmbitionBox / Glassdoor
+
+🤝 HOW WE’LL WORK (IMPORTANT)
+This is a collaborative build, not a one-time assignment.
+Stay in continuous communication. Share progress, blockers, and decisions early.
+We will actively guide you—don’t wait until the end to course-correct.
+Default to shipping fast + iterating, not overthinking.
+
+🧠 TOOLING
+You are encouraged to use any tools that improve your velocity:
+AI tools: Cursor, Claude, ChatGPT, etc.
+Dev tools, libraries, frameworks as needed
+👉 The goal is speed with correctness, not manual effort.
+
+⚠️ ETHICS & CONSTRAINTS (NON-NEGOTIABLE)
+❌ Do NOT copy code from existing platforms like Levels.fyi or any competitor
+❌ Do NOT replicate proprietary implementations from other websites
+✅ You may take inspiration from product behavior, UX, and structure
+✅ All code must be original and understood by you
+
+🧪 EXPECTATION
+If you use AI-generated code → you must understand, validate, and adapt it
+If something breaks → you must be able to debug it yourself
+If asked → you should be able to explain your implementation clearly
+
+🎯 WHAT GOOD LOOKS LIKE
+Clean, readable code
+Strong understanding of levels + structured compensation
+Thoughtful trade-offs, not random decisions
+Proactive communication
+
