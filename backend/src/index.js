@@ -7,10 +7,20 @@ const { SalaryIngestSchema, SalaryFilterSchema } = require('./lib/validations');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// ✅ FIXED CORS (frontend-safe)
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "*",
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Routes
+/* ---------------- HEALTH CHECK ---------------- */
+app.get('/api/health', (req, res) => {
+  res.json({ status: "ok", message: "Backend running fine 🚀" });
+});
+
+/* ---------------- GET SALARIES ---------------- */
 app.get('/api/salaries', async (req, res) => {
   try {
     const params = {
@@ -26,9 +36,7 @@ app.get('/api/salaries', async (req, res) => {
 
     const where = {};
     if (validated.company) {
-      where.company = {
-        contains: validated.company.toLowerCase(),
-      };
+      where.company = { contains: validated.company.toLowerCase() };
     }
     if (validated.role) where.role = { contains: validated.role };
     if (validated.level) where.level = validated.level;
@@ -48,12 +56,16 @@ app.get('/api/salaries', async (req, res) => {
   }
 });
 
+/* ---------------- INGEST SALARY ---------------- */
 app.post('/api/ingest-salary', async (req, res) => {
   try {
     const result = SalaryIngestSchema.safeParse(req.body);
-    
+
     if (!result.success) {
-      return res.status(400).json({ error: "Invalid data format", details: result.error.format() });
+      return res.status(400).json({
+        error: "Invalid data format",
+        details: result.error.format()
+      });
     }
 
     const data = result.data;
@@ -70,7 +82,10 @@ app.post('/api/ingest-salary', async (req, res) => {
     });
 
     if (existing) {
-      return res.status(409).json({ error: "Duplicate entry detected", existingId: existing.id });
+      return res.status(409).json({
+        error: "Duplicate entry detected",
+        existingId: existing.id
+      });
     }
 
     const salary = await prisma.salary.create({
@@ -95,10 +110,10 @@ app.post('/api/ingest-salary', async (req, res) => {
   }
 });
 
+/* ---------------- COMPANY STATS ---------------- */
 app.get('/api/company/:name', async (req, res) => {
   try {
-    const { name } = req.params;
-    const companyName = name.toLowerCase();
+    const companyName = req.params.name.toLowerCase();
 
     const salaries = await prisma.salary.findMany({
       where: { company: companyName },
@@ -109,9 +124,13 @@ app.get('/api/company/:name', async (req, res) => {
       return res.status(404).json({ error: "Company not found" });
     }
 
-    const sortedTC = salaries.map((s) => s.totalCompensation).sort((a, b) => a - b);
+    const sortedTC = salaries.map(s => s.totalCompensation).sort((a, b) => a - b);
     const mid = Math.floor(sortedTC.length / 2);
-    const medianTC = sortedTC.length % 2 !== 0 ? sortedTC[mid] : (sortedTC[mid - 1] + sortedTC[mid]) / 2;
+
+    const medianTC =
+      sortedTC.length % 2 !== 0
+        ? sortedTC[mid]
+        : (sortedTC[mid - 1] + sortedTC[mid]) / 2;
 
     const levelDist = salaries.reduce((acc, curr) => {
       acc[curr.level] = (acc[curr.level] || 0) + 1;
@@ -119,7 +138,7 @@ app.get('/api/company/:name', async (req, res) => {
     }, {});
 
     res.json({
-      company: name,
+      company: companyName,
       salaries,
       stats: {
         count: salaries.length,
@@ -133,12 +152,13 @@ app.get('/api/company/:name', async (req, res) => {
   }
 });
 
+/* ---------------- COMPARE ---------------- */
 app.get('/api/compare', async (req, res) => {
   try {
     const { id1, id2 } = req.query;
 
     if (!id1 || !id2) {
-      return res.status(400).json({ error: "Two salary IDs are required for comparison" });
+      return res.status(400).json({ error: "Two salary IDs required" });
     }
 
     const [salary1, salary2] = await Promise.all([
@@ -147,20 +167,24 @@ app.get('/api/compare', async (req, res) => {
     ]);
 
     if (!salary1 || !salary2) {
-      return res.status(404).json({ error: "One or both salary entries not found" });
+      return res.status(404).json({ error: "Salary not found" });
     }
 
     const tcDiff = salary1.totalCompensation - salary2.totalCompensation;
+
     const LEVEL_MAP = { L3: 3, L4: 4, L5: 5 };
-    const levelNum1 = LEVEL_MAP[salary1.level] || 0;
-    const levelNum2 = LEVEL_MAP[salary2.level] || 0;
+    const levelDiff =
+      (LEVEL_MAP[salary1.level] || 0) - (LEVEL_MAP[salary2.level] || 0);
 
     res.json({
       comparison: [salary1, salary2],
       analysis: {
         totalCompensationDiff: tcDiff,
-        percentDiff: salary2.totalCompensation !== 0 ? (tcDiff / salary2.totalCompensation) * 100 : 0,
-        levelDiff: levelNum1 - levelNum2,
+        percentDiff:
+          salary2.totalCompensation !== 0
+            ? (tcDiff / salary2.totalCompensation) * 100
+            : 0,
+        levelDiff,
         baseDiff: salary1.baseSalary - salary2.baseSalary,
         bonusDiff: salary1.bonus - salary2.bonus,
         stockDiff: salary1.stock - salary2.stock,
@@ -172,6 +196,7 @@ app.get('/api/compare', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
+/* ---------------- SERVER START ---------------- */
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Backend running on port ${PORT}`);
 });
