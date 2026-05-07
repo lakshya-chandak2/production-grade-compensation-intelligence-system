@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Compensation Intelligence | Production Grade Analytics",
-  description: "Advanced compensation data engine for modern engineering levels.",
+  title: "Compensation Intelligence — Data-Driven Salary Analytics",
+  description: "A production-grade compensation analytics platform for standardized engineering level comparisons.",
 };
 
 export default function RootLayout({
@@ -25,9 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased pt-16`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Navbar />
-        {children}
+        <div className="pt-16">
+          {children}
+        </div>
       </body>
     </html>
   );
